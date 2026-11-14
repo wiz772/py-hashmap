@@ -28,8 +28,6 @@ class HashMap():
                     
             probing_count += 1
         return (None, None)
-
-
         
     def put(self, key, value):
         probing_count = 0
@@ -57,7 +55,7 @@ class HashMap():
 
                 return True
             probing_count += 1
-            
+
         if first_deleted_index is None:
             return False
         else: 
@@ -69,6 +67,14 @@ class HashMap():
         if bucket is None: 
             return None
         return bucket.value
+
+    def remove(self, key):
+        index, bucket = self._find(key)
+        if bucket is None or index is None: 
+            return False 
+
+        self.buckets[index] = Bucket(BucketState.DELETED)
+        return True
         
     def print_map(self):
         string = ""
