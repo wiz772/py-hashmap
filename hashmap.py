@@ -16,7 +16,7 @@ class HashMap():
     def put(self, key, value):
         probing_count = 0
         index = self.hash_function(key)
-        print(f"index: {index}")
+        print(f"index de base pour {key}: {index}")
 
         done = False
         while not done and probing_count < self.size:
@@ -27,9 +27,26 @@ class HashMap():
                 probing_count += 1
                 pass
             else:
+                print(f"index après probing pour {key}: {curr_index}")
                 self.buckets[curr_index] = Bucket(BucketState.OCCUPIED, key,value)
                 done = True
-                
+
+    def get(self, key):
+        probing_count = 0
+        index = self.hash_function(key)
+        while probing_count < self.size:
+            curr_index = (index + probing_count) % self.size
+            bucket = self.buckets[curr_index]
+
+            if bucket.is_occupied():
+                if bucket.key == key:
+                    return bucket.value
+            elif bucket.is_empty():
+                return None
+            
+            probing_count += 1
+        return None
+        
     def print_map(self):
         string = ""
         for index, bucket in enumerate(self.buckets):
