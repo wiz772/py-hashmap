@@ -13,42 +13,52 @@ class HashMap():
         numeric_hash =  int(hex_digest, 16) % self.size
         return numeric_hash
 
-    def put(self, key, value):
-        probing_count = 0
-        index = self.hash_function(key)
-        print(f"index de base pour {key}: {index}")
-
-        done = False
-        while not done and probing_count < self.size:
-            curr_index = (index + probing_count) % self.size
-            bucket = self.buckets[curr_index]
-
-            if bucket.is_occupied() or bucket.is_deleted():
-                probing_count += 1
-                pass
-            else:
-                print(f"index après probing pour {key}: {curr_index}")
-                self.buckets[curr_index] = Bucket(BucketState.OCCUPIED, key,value)
-                done = True
-
-    def get(self, key):
+    def _find(self, key):
         probing_count = 0
         index = self.hash_function(key)
         while probing_count < self.size:
             curr_index = (index + probing_count) % self.size
             bucket = self.buckets[curr_index]
-
+        
             if bucket.is_occupied():
                 if bucket.key == key:
-                    return bucket.value
+                    return (curr_index, bucket)
             elif bucket.is_empty():
-                return None
-            
+                return (None, None)
+                    
             probing_count += 1
-        return None
+        return (None, None)
+
+
+        
+    def put(self, key, value):
+        probing_count = 0
+        index = self.hash_function(key)
+
+        while probing_count < self.size:
+            curr_index = (index + probing_count) % self.size
+            bucket = self.buckets[curr_index]
+
+            if bucket.is_occupied() or bucket.is_deleted():
+                if bucket.key == key:
+                    return False
+                
+                probing_count += 1
+                pass
+            else:
+                self.buckets[curr_index] = Bucket(BucketState.OCCUPIED, key,value)
+                return True
+        return False
+
+    def get(self, key):
+        index, bucket = self._find(key)
+        if bucket is None: 
+            return None
+        return bucket.value
         
     def print_map(self):
         string = ""
+
         for index, bucket in enumerate(self.buckets):
             string += f"index: {index}, state: {bucket.state}, key: {bucket.key}, value: {bucket.value}\n"
 
