@@ -33,22 +33,36 @@ class HashMap():
         
     def put(self, key, value):
         probing_count = 0
+
         index = self.hash_function(key)
+        first_deleted_index = None
 
         while probing_count < self.size:
             curr_index = (index + probing_count) % self.size
             bucket = self.buckets[curr_index]
 
-            if bucket.is_occupied() or bucket.is_deleted():
+            if bucket.is_occupied():
                 if bucket.key == key:
                     return False
                 
-                probing_count += 1
-                pass
-            else:
-                self.buckets[curr_index] = Bucket(BucketState.OCCUPIED, key,value)
+            elif bucket.is_deleted():
+                if first_deleted_index is None:
+                    first_deleted_index = curr_index
+
+            elif bucket.is_empty():
+                if first_deleted_index is None:
+                    self.buckets[curr_index] = Bucket(BucketState.OCCUPIED, key,value)
+                else:
+                    self.buckets[first_deleted_index] = Bucket(BucketState.OCCUPIED, key,value)
+
                 return True
-        return False
+            probing_count += 1
+            
+        if first_deleted_index is None:
+            return False
+        else: 
+            self.buckets[first_deleted_index] = Bucket(BucketState.OCCUPIED, key,value)
+            return True
 
     def get(self, key):
         index, bucket = self._find(key)
