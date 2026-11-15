@@ -1,6 +1,6 @@
 from bucket import Bucket
 from bucket_state import BucketState
-import hashlib
+from stablehash import stablehash
 
 class HashMap():
     def __init__(self, size=100):
@@ -8,11 +8,9 @@ class HashMap():
         self.buckets = [Bucket() for i in range(self.size)]
 
     def hash_function(self, key):
-        hash_obj = hashlib.sha256(key.encode("utf-8"))
-        hex_digest = hash_obj.hexdigest()
-        numeric_hash =  int(hex_digest, 16) % self.size
-        return numeric_hash
-
+        digest = stablehash(key).digest()
+        return int.from_bytes(digest[:8], "big") % self.size
+    
     def _find(self, key):
         probing_count = 0
         index = self.hash_function(key)
@@ -52,8 +50,8 @@ class HashMap():
                     self.buckets[curr_index] = Bucket(BucketState.OCCUPIED, key,value)
                 else:
                     self.buckets[first_deleted_index] = Bucket(BucketState.OCCUPIED, key,value)
-
                 return True
+            
             probing_count += 1
 
         if first_deleted_index is None:
@@ -66,6 +64,7 @@ class HashMap():
         index, bucket = self._find(key)
         if bucket is None: 
             return None
+        
         return bucket.value
 
     def remove(self, key):
